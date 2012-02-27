@@ -1,7 +1,6 @@
 package com.marcusmccurdy.trie;
 
 import java.util.*;
-import java.util.Map.Entry;
 
 /**
  *
@@ -9,27 +8,18 @@ import java.util.Map.Entry;
  */
 public class Trie {
 
-    protected final Map<Character, Trie> children;
-    protected String terminal;
-    protected boolean leaf = false;
+    protected final NavigableMap<Character, Trie> children;
+    protected boolean terminal = false;
 
     public Trie() {
-        this(null);
-    }
-
-    private Trie(String value) {
-        this.terminal = value;
-        children = new HashMap<Character, Trie>();
+        children = new TreeMap<Character, Trie>();
     }
 
     protected void add(char c) {
-        String val;
-        if (this.terminal == null) {
-            val = Character.toString(c);
-        } else {
-            val = this.terminal + c;
+        if (!children.containsKey(c)) {
+            children.put(c, new Trie());
         }
-        children.put(c, new Trie(val));
+
     }
 
     public void insert(String word) {
@@ -43,41 +33,34 @@ public class Trie {
             }
             node = node.children.get(c);
         }
-        node.leaf = true;
+        node.terminal = true;
     }
 
-    public String find(String word) {
-        Trie node = this;
-        for (char c : word.toCharArray()) {
-            if (!node.children.containsKey(c)) {
-                return "";
-            }
-            node = node.children.get(c);
+    private void ac(Character currentChar, Trie node, StringBuilder currentString, Collection<String> results) {
+        currentString.append(currentChar);
+        if (node.terminal) {
+            results.add(currentString.toString());
         }
-        return node.terminal;
+        for (Map.Entry<Character, Trie> e : node.children.entrySet()) {
+            ac(e.getKey(), e.getValue(), currentString, results);
+        }
+        currentString.deleteCharAt(currentString.length() - 1);
     }
 
     public Collection<String> autoComplete(String prefix) {
+        final List<String> results = new ArrayList<String>();
+        final StringBuilder sb = new StringBuilder(prefix);
         Trie node = this;
         for (char c : prefix.toCharArray()) {
-            if (!node.children.containsKey(c)) {
+            node = node.children.get(c);
+            if (node == null) {
                 return Collections.emptyList();
             }
-            node = node.children.get(c);
         }
-        return node.allPrefixes();
-    }
-
-    protected Collection<String> allPrefixes() {
-        List<String> results = new ArrayList<String>();
-        if (this.leaf) {
-            results.add(this.terminal);
-        }
-        for (Entry<Character, Trie> entry : children.entrySet()) {
-            Trie child = entry.getValue();
-            Collection<String> childPrefixes = child.allPrefixes();
-            results.addAll(childPrefixes);
+        for (Map.Entry<Character, Trie> e : node.children.entrySet()) {
+            ac(e.getKey(), e.getValue(), sb, results);
         }
         return results;
     }
+
 }

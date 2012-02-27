@@ -24,7 +24,6 @@ public class TrieTest {
         assertEquals(1, root.children.size());
         Trie child = root.children.get('z');
         assertNotNull(child);
-        assertEquals("z", child.terminal);
     }
 
     /**
@@ -45,15 +44,6 @@ public class TrieTest {
         root.insert(null);
     }
 
-    @Test
-    public void testFind() {
-        root.insert("hello");
-        root.insert("test");
-        root.insert("tea");
-        root.insert("bravo");
-        assertEquals("", root.find("missing"));
-        assertEquals("test", root.find("test"));
-    }
 
     @Test
     public void testAutoComplete() {
